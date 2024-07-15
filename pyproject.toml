@@ -21,7 +21,7 @@ dask = {extras = ["dataframe"], version = "^2024.3.1"}
 ipykernel = "^6.29.4"
 igraph = "^0.11.5"
 louvain = "^0.8.2"
-setuptools = "^69.5.1"
+setuptools = "^70.0.0"
 pytest = "^8.2.0"
 
 [tool.poetry.group.dev.dependencies]
