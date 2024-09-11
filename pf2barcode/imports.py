@@ -19,7 +19,7 @@ def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData
     X = X[:, readmean > geneThreshold]
 
     # Normalize read depth
-    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True)
+    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True, key_added="n_counts")
 
     # Scale genes by sum
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
@@ -39,8 +39,8 @@ def import_CCLE() -> anndata.AnnData:
 
     for name in (
         # "HCT116_tracing_T1",
-        # "HCT116_tracing_T2",
-        # "MDA-MB-231_tracing_T1",
+        # "T2_HCT116",
+        "T1_MDAMB231",
         "T2_MDAMB231",
     ):
         data = anndata.read_text(
@@ -65,8 +65,7 @@ def import_CCLE() -> anndata.AnnData:
 
     X = X[X.obs["SW"].isin(counts.index), :]
 
-    X = prepare_dataset(X, geneThreshold=0.5)
+    X = prepare_dataset(X, geneThreshold=0.001)
 
-    sc.pp.neighbors(X, n_neighbors=8)
-    sc.tl.louvain(X, resolution=0.5)
+    sc.pp.pca(X, n_comps=30, svd_solver="arpack")
     return X
