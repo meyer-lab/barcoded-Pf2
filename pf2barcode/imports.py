@@ -40,7 +40,7 @@ def import_CCLE() -> anndata.AnnData:
     for name in (
         # "HCT116_tracing_T1",
         # "T2_HCT116",
-        "T1_MDAMB231",
+        # "T1_MDAMB231",
         "T2_MDAMB231",
     ):
         data = anndata.read_text(
@@ -60,12 +60,7 @@ def import_CCLE() -> anndata.AnnData:
     X = anndata.concat(adatas, label="sample", index_unique="-")
     X.X = csr_matrix(X.X)
 
-    counts = X.obs["SW"].value_counts()
-    counts = counts[counts > 5]
-
-    X = X[X.obs["SW"].isin(counts.index), :]
-
     X = prepare_dataset(X, geneThreshold=0.001)
 
-    sc.pp.pca(X, n_comps=30, svd_solver="arpack")
+    sc.pp.pca(X, n_comps=20, svd_solver="arpack")
     return X
