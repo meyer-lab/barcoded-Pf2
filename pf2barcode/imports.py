@@ -1,9 +1,10 @@
 from pathlib import Path
+
+import anndata
+import numpy as np
 import pandas as pd
 import scanpy as sc
-import anndata
 from scipy.sparse import csr_matrix
-import numpy as np
 from sklearn.utils.sparsefuncs import (
     inplace_column_scale,
     mean_variance_axis,
@@ -19,7 +20,9 @@ def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData
     X = X[:, readmean > geneThreshold]
 
     # Normalize read depth
-    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True, key_added="n_counts")
+    sc.pp.normalize_total(
+        X, exclude_highly_expressed=False, inplace=True, key_added="n_counts"
+    )
 
     # Scale genes by sum
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
