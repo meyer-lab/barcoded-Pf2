@@ -22,7 +22,7 @@ clean:
 	rm -rf factor_cache
 
 pyright: .venv
-	rye run pyright pf2
+	rye run pyright pf2barcode
 
 coverage.xml: .venv
 	rye run pytest --cov=pf2barcode --cov-report xml:coverage.xml
