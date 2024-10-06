@@ -7,11 +7,14 @@ allOutput = $(patsubst pf2barcode/figures/figure%.py, output/figure%.svg, $(flis
 
 all: $(allOutput)
 
-output/figure%.svg: pf2barcode/figures/figure%.py
+output/figure%.svg: pf2barcode/figures/figure%.py .venv
 	@ mkdir -p ./output
 	rye run fbuild $*
 
-test:
+.venv: pyproject.toml
+	rye sync
+
+test: .venv
 	rye run pytest -s -x -v pf2barcode/tests/test_import.py
 
 clean:
@@ -24,6 +27,6 @@ pyright: .venv
 coverage.xml: .venv
 	rye run pytest --cov=pf2barcode --cov-report xml:coverage.xml
 
-testprofile:
+testprofile: .venv
 	rye run python3 -m cProfile -o profile -m pytest -s -v -x
 	gprof2dot -f pstats --node-thres=5.0 profile | dot -Tsvg -o profile.svg
