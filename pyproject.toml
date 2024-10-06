@@ -27,15 +27,40 @@ dependencies = [
 [tool.rye]
 managed = true
 dev-dependencies = [
-    "ruff>=0.4.1",
     "pytest>=8.2.0",
-    "pyright>=1.1.380",
+    "pytest-cov>=5.0",
+    "pyright>=1.1.383",
 ]
 
-[tool.rye.scripts]
+readme = "README.md"
+
+[project.scripts]
 fbuild = "pf2barcode.figures.common:genFigure"
-factor = "pf2barcode.imports:factorSave"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["pf2barcode"]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # Unused arguments
+    "ARG",
+]

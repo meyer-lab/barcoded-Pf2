@@ -1,5 +1,5 @@
-import pandas as pd
 import gseapy as gp
+import pandas as pd
 
 
 def geneOntology(X, var_names) -> pd.DataFrame:
