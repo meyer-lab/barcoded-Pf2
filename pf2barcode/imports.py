@@ -70,3 +70,21 @@ def import_CCLE() -> anndata.AnnData:
     sc.pp.neighbors(X, n_neighbors=8)
     sc.tl.louvain(X, resolution=0.5)
     return X
+
+#Function to read in data files and merge with the metadata columns and outputting the scores matrix
+def DataToScores(data_file, metadata_file):
+    #read in the meta data using pandas
+    metadata = pd.read_csv(metadata_file, delimiter = '\t', engine = 'python')
+    #separate the columns to merge with the data
+    columns = metadata[['full_cell_barcode', 'lineage_barcode']]
+    #create anndata object of the data file
+    data = anndata.read_csv(data_file, delimiter=',')
+    #merge the data file object with the metadata coluns
+    data.obs = data.obs.join(columns, how ='left')
+    #run PCA
+    sc.tl.pca(data)
+    #message to flag that everything ran
+    print('PCA computation done and scores added to AnnData object.')
+    #return the scores plot 
+    print(data.obsm['X_pca'])
+    return data.obsm['X_pca']
