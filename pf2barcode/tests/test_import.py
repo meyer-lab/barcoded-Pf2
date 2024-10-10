@@ -3,7 +3,8 @@ Test the cross validation accuracy.
 """
 
 import numpy as np
-from pf2barcode.imports import (
+
+from ..imports import (
     import_CCLE,
     DataToScores
 )
