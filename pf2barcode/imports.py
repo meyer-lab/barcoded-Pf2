@@ -72,3 +72,21 @@ def import_CCLE() -> anndata.AnnData:
 
     sc.pp.pca(X, n_comps=30, svd_solver="arpack")
     return X
+
+
+def import_GSE150949(data_file):
+    # read in the meta data using pandas
+    metadata = pd.read_csv(
+        "/opt/extra-storage/GSE150949/GSE150949_metaData_with_lineage.txt.gz",
+        delimiter="\t",
+        engine="python",
+    )
+    # separate the columns to merge with the data
+    columns = metadata[["full_cell_barcode", "lineage_barcode"]]
+    # create anndata object of the data file
+    data = anndata.read_csv(data_file, delimiter=",")
+    # merge the data file object with the metadata coluns
+    data.obs = data.obs.join(columns, how="left")
+    # run PCA
+    sc.tl.pca(data)
+    return data
