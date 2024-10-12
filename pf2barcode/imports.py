@@ -73,20 +73,20 @@ def import_CCLE() -> anndata.AnnData:
     sc.pp.pca(X, n_comps=30, svd_solver="arpack")
     return X
 
-#Function to read in data files and merge with the metadata columns and outputting the scores matrix
-def DataToScores(data_file, metadata_file):
-    #read in the meta data using pandas
-    metadata = pd.read_csv(metadata_file, delimiter = '\t', engine = 'python')
-    #separate the columns to merge with the data
-    columns = metadata[['full_cell_barcode', 'lineage_barcode']]
-    #create anndata object of the data file
-    data = anndata.read_csv(data_file, delimiter=',')
-    #merge the data file object with the metadata coluns
-    data.obs = data.obs.join(columns, how ='left')
-    #run PCA
+
+def import_GSE150949(data_file):
+    # read in the meta data using pandas
+    metadata = pd.read_csv(
+        "/opt/extra-storage/GSE150949/GSE150949_metaData_with_lineage.txt.gz",
+        delimiter="\t",
+        engine="python",
+    )
+    # separate the columns to merge with the data
+    columns = metadata[["full_cell_barcode", "lineage_barcode"]]
+    # create anndata object of the data file
+    data = anndata.read_csv(data_file, delimiter=",")
+    # merge the data file object with the metadata coluns
+    data.obs = data.obs.join(columns, how="left")
+    # run PCA
     sc.tl.pca(data)
-    #message to flag that everything ran
-    print('PCA computation done and scores added to AnnData object.')
-    #return the scores plot 
-    print(data.obsm['X_pca'])
-    return data.obsm['X_pca']
+    return data
