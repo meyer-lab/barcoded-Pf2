@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import anndata
+import hdf5plugin
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -74,7 +75,7 @@ def import_CCLE() -> anndata.AnnData:
     return X
 
 
-def import_GSE150949(data_file):
+def process_GSE150949(data_file):
     # read in the meta data using pandas
     metadata = pd.read_csv(
         "/opt/extra-storage/GSE150949/GSE150949_metaData_with_lineage.txt.gz",
@@ -87,6 +88,19 @@ def import_GSE150949(data_file):
     data = anndata.read_csv(data_file, delimiter=",")
     # merge the data file object with the metadata coluns
     data.obs = data.obs.join(columns, how="left")
-    # run PCA
-    sc.tl.pca(data)
+    data.obs["full_cell_barcode"] = data.obs["full_cell_barcode"].astype(str)
+    data.obs["lineage_barcode"] = data.obs["lineage_barcode"].astype(str)
+    data.X = csr_matrix(data.X)
     return data
+
+
+def import_GSE150949():
+    # read in the meta data using anndata
+    data = anndata.read_h5ad(
+        "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.data.h5"
+    )
+    count = anndata.read_h5ad(
+        "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.count.h5"
+    )
+
+    return data, count
