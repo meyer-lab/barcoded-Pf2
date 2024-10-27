@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import anndata
-import hdf5plugin
+import hdf5plugin  # noqa: F401
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -76,6 +76,8 @@ def import_CCLE() -> anndata.AnnData:
 
 
 def process_GSE150949(data_file):
+    """Preprocessing for GSE150949. This is performed to generate the annData files
+    that we will use more regularly."""
     # read in the meta data using pandas
     metadata = pd.read_csv(
         "/opt/extra-storage/GSE150949/GSE150949_metaData_with_lineage.txt.gz",
