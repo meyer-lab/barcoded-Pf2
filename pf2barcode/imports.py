@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import anndata
+import hdf5plugin  # noqa: F401
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -72,3 +73,36 @@ def import_CCLE() -> anndata.AnnData:
 
     sc.pp.pca(X, n_comps=30, svd_solver="arpack")
     return X
+
+
+def process_GSE150949(data_file):
+    """Preprocessing for GSE150949. This is performed to generate the annData files
+    that we will use more regularly."""
+    # read in the meta data using pandas
+    metadata = pd.read_csv(
+        "/opt/extra-storage/GSE150949/GSE150949_metaData_with_lineage.txt.gz",
+        delimiter="\t",
+        engine="python",
+    )
+    # separate the columns to merge with the data
+    columns = metadata[["full_cell_barcode", "lineage_barcode"]]
+    # create anndata object of the data file
+    data = anndata.read_csv(data_file, delimiter=",")
+    # merge the data file object with the metadata coluns
+    data.obs = data.obs.join(columns, how="left")
+    data.obs["full_cell_barcode"] = data.obs["full_cell_barcode"].astype(str)
+    data.obs["lineage_barcode"] = data.obs["lineage_barcode"].astype(str)
+    data.X = csr_matrix(data.X)
+    return data
+
+
+def import_GSE150949():
+    # read in the meta data using anndata
+    data = anndata.read_h5ad(
+        "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.data.h5"
+    )
+    count = anndata.read_h5ad(
+        "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.count.h5"
+    )
+
+    return data, count
