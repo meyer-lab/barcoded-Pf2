@@ -59,6 +59,8 @@ idna==3.8
     # via requests
 igraph==0.11.6
     # via pf2barcode
+importlib-metadata==8.5.0
+    # via dask
 ipykernel==6.29.5
     # via pf2barcode
 ipython==8.27.0
@@ -238,6 +240,8 @@ traitlets==5.14.3
     # via jupyter-client
     # via jupyter-core
     # via matplotlib-inline
+typing-extensions==4.12.2
+    # via ipython
 tzdata==2024.1
     # via pandas
 umap-learn==0.5.6
@@ -248,3 +252,5 @@ wcwidth==0.2.13
     # via prompt-toolkit
 widgetsnbextension==4.0.13
     # via ipywidgets
+zipp==3.20.2
+    # via importlib-metadata
