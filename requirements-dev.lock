@@ -56,7 +56,10 @@ h5netcdf==1.3.0
 h5py==3.11.0
     # via anndata
     # via h5netcdf
+    # via hdf5plugin
     # via scanpy
+hdf5plugin==5.0.0
+    # via pf2barcode
 idna==3.8
     # via requests
 igraph==0.11.6
