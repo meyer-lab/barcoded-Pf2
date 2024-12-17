@@ -26,7 +26,6 @@ def makeFigure():
             cells.append(cells_selected.flatten())
 
         pvalues[jj] = kruskal(*cells).pvalue
-        
 
     sns.barplot(x=np.arange(pvalues.shape[0]), y=-np.log10(pvalues))
     plt.xlabel("PC")
