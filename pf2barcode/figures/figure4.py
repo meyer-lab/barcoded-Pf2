@@ -8,10 +8,10 @@ from pf2barcode.imports import import_CCLE
 from .common import (
     getSetup,
     subplotLabel,
-)                                        
+)
+
 
 def makeFigure():
-
     X = import_CCLE()
 
     ax, f = getSetup((10, 6), (1, 1))
@@ -31,5 +31,5 @@ def makeFigure():
     sns.barplot(x=np.arange(pvalues.shape[0]), y=-np.log10(pvalues))
     plt.xlabel("PC")
     plt.ylabel("-log10(p-value)")
-    
+
     return f

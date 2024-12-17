@@ -56,13 +56,14 @@ h5netcdf==1.3.0
 h5py==3.11.0
     # via anndata
     # via h5netcdf
+    # via hdf5plugin
     # via scanpy
+hdf5plugin==5.0.0
+    # via pf2barcode
 idna==3.8
     # via requests
 igraph==0.11.6
     # via pf2barcode
-importlib-metadata==8.5.0
-    # via dask
 iniconfig==2.0.0
     # via pytest
 ipykernel==6.29.5
@@ -254,7 +255,6 @@ traitlets==5.14.3
     # via jupyter-core
     # via matplotlib-inline
 typing-extensions==4.12.2
-    # via ipython
     # via pyright
 tzdata==2024.1
     # via pandas
@@ -266,5 +266,3 @@ wcwidth==0.2.13
     # via prompt-toolkit
 widgetsnbextension==4.0.13
     # via ipywidgets
-zipp==3.20.2
-    # via importlib-metadata
