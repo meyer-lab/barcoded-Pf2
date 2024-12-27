@@ -76,23 +76,32 @@ def import_CCLE() -> anndata.AnnData:
 
 
 def process_GSE150949(data_file):
+def process_GSE150949(data_file):
     """Preprocessing for GSE150949. This is performed to generate the annData files
     that we will use more regularly."""
     # read in the meta data using pandas
     metadata = pd.read_csv(
-        "/opt/extra-storage/GSE150949/GSE150949_metaData_with_lineage.txt.gz",
-        delimiter="\t",
+        "/home/quinnm/barcoded-Pf2-1/pf2barcode/GSE150949_pooled_watermelon.metadata.matrix.csv.gz",
+        delimiter=",",
         engine="python",
     )
-    # separate the columns to merge with the data
-    columns = metadata[["full_cell_barcode", "lineage_barcode"]]
+    ## check duplicates in the cell column
+    # duplicates = metadata['cell'].duplicated()
+    # if duplicates.any():
+    #     print(f"There are {duplicates.sum()} duplicate entries in the 'cell' column.")
+    # else:
+    #     print("No duplicates found in the 'cell' column.")
+    
+    # no duplicates indicates that the cell column is the full cell barcode
+    # set metadata index to the cell barcodes 
+    metadata.set_index('cell', inplace=True)
+  
     # create anndata object of the data file
-    data = anndata.read_csv(data_file, delimiter=",")
-    # merge the data file object with the metadata coluns
-    data.obs = data.obs.join(columns, how="left")
-    data.obs["full_cell_barcode"] = data.obs["full_cell_barcode"].astype(str)
-    data.obs["lineage_barcode"] = data.obs["lineage_barcode"].astype(str)
-    data.X = csr_matrix(data.X)
+    data = anndata.read_csv(data_file, delimiter=",", dtype=str)
+    data = data.T
+    data.obs = data.obs.join(metadata, how="left")
+    # the cell column is now the data.obs.index (can be added manually if needed)
+    print(data.obs.index)
     return data
 
 
