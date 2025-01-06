@@ -75,24 +75,20 @@ def import_CCLE() -> anndata.AnnData:
     return X
 
 
-def process_GSE150949(data_file):
+
 def process_GSE150949(data_file):
     """Preprocessing for GSE150949. This is performed to generate the annData files
     that we will use more regularly."""
     # read in the meta data using pandas
     metadata = pd.read_csv(
-        "/home/quinnm/barcoded-Pf2-1/pf2barcode/GSE150949_pooled_watermelon.metadata.matrix.csv.gz",
+        "pf2barcode/data/GSE150949_pooled_watermelon.metadata.matrix.csv.gz",
         delimiter=",",
         engine="python",
     )
-    ## check duplicates in the cell column
-    # duplicates = metadata['cell'].duplicated()
-    # if duplicates.any():
-    #     print(f"There are {duplicates.sum()} duplicate entries in the 'cell' column.")
-    # else:
-    #     print("No duplicates found in the 'cell' column.")
-    
+    # Checked for duplicates in the cell column to determine if cell is lineage barcodes or full cell barcodes 
+    # result: No duplicates found in the 'cell' column.
     # no duplicates indicates that the cell column is the full cell barcode
+    
     # set metadata index to the cell barcodes 
     metadata.set_index('cell', inplace=True)
   
@@ -102,6 +98,7 @@ def process_GSE150949(data_file):
     data.obs = data.obs.join(metadata, how="left")
     # the cell column is now the data.obs.index (can be added manually if needed)
     print(data.obs.index)
+    print(data.obs["orig.ident"])
     return data
 
 
