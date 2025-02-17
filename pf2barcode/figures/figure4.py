@@ -27,5 +27,3 @@ def makeFigure():
     plt.ylabel("-log10(p-value)")
 
     return f
-
-
