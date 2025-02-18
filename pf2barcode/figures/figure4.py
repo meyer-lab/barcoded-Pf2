@@ -1,3 +1,7 @@
+"""
+Generates a bar plot visualizing the relationship of PCs and computed negative log10 p-values
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -7,9 +11,10 @@ from pf2barcode.imports import import_CCLE
 
 from .common import (
     getSetup,
-    subplotLabel,
-    kruskal_pvalues, 
+    subplotLabel, 
 )
+
+from .analysis import kruskal_pvalues
 
 def makeFigure():
     X = import_CCLE()

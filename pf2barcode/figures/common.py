@@ -7,13 +7,11 @@ import time
 from string import ascii_letters
 
 import matplotlib
-import numpy as np
 import seaborn as sns
 from matplotlib import gridspec
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from scipy.stats import kruskal
 
 matplotlib.use("AGG")
 
@@ -79,23 +77,3 @@ def genFigure():
         )
 
     print(f"Figure {sys.argv[1]} is done after {time.time() - start} seconds.\n")
-
-def kruskal_pvalues(X):
-
-    # Initialize an array of zeros to store p-values for each PC
-    pvalues = np.zeros(X.obsm["X_pca"].shape[1])
-
-    # Loop through each principal component (PC) to compute p-values
-    for jj in range(X.obsm["X_pca"].shape[1]):
-        cells = [] 
-        # Loop through each unique barcode in the "SW" observation column
-        for barcodes in X.obs["SW"].unique():
-            # Select data corresponding to current iteration of barcode and PC
-            cells_selected = X.obsm["X_pca"][X.obs["SW"] == barcodes, jj]
-            # Flatten data and add to list
-            cells.append(cells_selected.flatten())
-        # Perform the Kruskal-Wallis H-test
-        pvalues[jj] = kruskal(*cells).pvalue
-
-    return(pvalues)
-

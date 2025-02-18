@@ -1,3 +1,7 @@
+"""
+Visualizes a scatter plot, showing the relationship between % variance and -log10(pvalue)
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -8,8 +12,9 @@ from pf2barcode.imports import import_CCLE
 from .common import (
     getSetup, 
     subplotLabel, 
-    kruskal_pvalues,
 )
+
+from .analysis import kruskal_pvalues
 
 def makeFigure():
     X = import_CCLE()
