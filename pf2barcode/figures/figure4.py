@@ -11,14 +11,15 @@ from pf2barcode.imports import import_CCLE
 
 from .common import (
     getSetup,
-    subplotLabel, 
+    subplotLabel,
 )
 
 from .analysis import kruskal_pvalues
 
+
 def makeFigure():
     X = import_CCLE()
-    
+
     # Get a list of the axis objects and create a figure.
     ax, f = getSetup((10, 6), (1, 1))
     subplotLabel(ax)

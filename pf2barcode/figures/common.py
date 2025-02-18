@@ -28,6 +28,7 @@ matplotlib.rcParams["legend.markerscale"] = 0.7
 matplotlib.rcParams["legend.borderpad"] = 0.35
 matplotlib.rcParams["svg.fonttype"] = "none"
 
+
 def getSetup(
     figsize: tuple[float, float], gridd: tuple[int, int]
 ) -> tuple[list[Axes], Figure]:
