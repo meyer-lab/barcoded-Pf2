@@ -1,5 +1,9 @@
 """
-Visualizes a scatter plot, showing the relationship between % variance and -log10(pvalue)
+Visualizes a scatter plot, showing the relationship between % variance explained by each PC and the statistical significance of the PC (-log10(p-value))
+
+Specifically, % of variance explained measures how much of the variability each PC captures
+
+Helps identify which PCs are both highly explanatatory (captures a large portion of the variance) and statistically significiant, with each point containing annotations of its corresponding PC number
 """
 
 import numpy as np
@@ -25,37 +29,32 @@ def makeFigure():
     subplotLabel(ax)
 
     # Extract PCA results
-    X_pca = X.obsm["X_pca"]  # PCA-transformed data
-
+    X_pca = X.obsm["X_pca"]  
+   
     # Compute % variance explained
-    total_variance = np.sum(np.var(X_pca, axis=0))
-    variance_explained = (np.var(X_pca, axis=0) / total_variance) * 100  # Convert to %
+    total_variance = np.sum(np.var(X_pca, axis = 0))
+    variance_explained = (np.var(X_pca, axis = 0) / total_variance) * 100  
 
     # Implement kruskal_pvalues function
     pvalues = kruskal_pvalues(X)
 
-    # Convert p-values to -log10 scale
     neg_log_pvalues = -np.log10(pvalues)
 
     # Create scatter plot
     sns.scatterplot(x=variance_explained, y=neg_log_pvalues, color="blue")
 
-    # Label axes
     plt.xlabel("Variance Explained (%)")
     plt.ylabel("-log10(p-value)")
     plt.title("PCA Significance vs Variance Explained")
 
     for i in range(len(variance_explained)):
         plt.annotate(
-            f"PC{i + 1}",  # Text to display
-            xy=(
-                variance_explained[i],
-                neg_log_pvalues[i],
-            ),  # Point to annotate (as a tuple)
-            xytext=(5, 5),  # Offset for the text
-            textcoords="offset points",  # Coordinate system for xytext
-            ha="center",  # Horizontal alignment of the text
-            fontsize=6,  # Font size
-        )
+            f"PC{i + 1}",  
+            xy = (variance_explained[i], neg_log_pvalues[i]), 
+            xytext = (5, 5), 
+            textcoords = "offset points", 
+            ha = 'center',  
+            fontsize = 6,  
+)
 
     return f
