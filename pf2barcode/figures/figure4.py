@@ -1,10 +1,19 @@
+"""
+Generates a bar plot visualizing the relationship of PCs and computed
+negative log10 p-values from the Kruskal-Wallis H-test
+
+Computed p-values determines if distributions of PCs are statistically
+significantly across different groups, and the negative log10 transformation
+of the p-values allows for easier identification and interpretation of signficant PCs 
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from scipy.stats import kruskal
 
 from pf2barcode.imports import import_CCLE
 
+from ..analysis import kruskal_pvalues
 from .common import (
     getSetup,
     subplotLabel,
@@ -14,19 +23,14 @@ from .common import (
 def makeFigure():
     X = import_CCLE()
 
+    # Get a list of the axis objects and create a figure.
     ax, f = getSetup((10, 6), (1, 1))
     subplotLabel(ax)
 
-    pvalues = np.zeros(X.obsm["X_pca"].shape[1])
+    # Implement kruskal_pvalues function
+    pvalues = kruskal_pvalues(X)
 
-    for jj in range(X.obsm["X_pca"].shape[1]):
-        cells = []
-        for barcodes in X.obs["SW"].unique():
-            cells_selected = X.obsm["X_pca"][X.obs["SW"] == barcodes, jj]
-            cells.append(cells_selected.flatten())
-
-        pvalues[jj] = kruskal(*cells).pvalue
-
+    # Barplot setup
     sns.barplot(x=np.arange(pvalues.shape[0]), y=-np.log10(pvalues))
     plt.xlabel("PC")
     plt.ylabel("-log10(p-value)")

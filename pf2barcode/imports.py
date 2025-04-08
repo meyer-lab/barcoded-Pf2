@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import anndata
-import hdf5plugin  # noqa: F401
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -47,7 +46,7 @@ def import_CCLE() -> anndata.AnnData:
         "T1_MDAMB231",
         "T2_MDAMB231",
     ):
-        data = anndata.read_text(
+        data = anndata.io.read_text(
             Path("./pf2barcode/data/" + name + "_count_mtx.tsv.bz2")
         ).T
         barcodes = pd.read_csv(
@@ -87,7 +86,7 @@ def process_GSE150949(data_file):
     # separate the columns to merge with the data
     columns = metadata[["full_cell_barcode", "lineage_barcode"]]
     # create anndata object of the data file
-    data = anndata.read_csv(data_file, delimiter=",")
+    data = anndata.io.read_csv(data_file, delimiter=",")
     # merge the data file object with the metadata coluns
     data.obs = data.obs.join(columns, how="left")
     data.obs["full_cell_barcode"] = data.obs["full_cell_barcode"].astype(str)
@@ -98,10 +97,10 @@ def process_GSE150949(data_file):
 
 def import_GSE150949():
     # read in the meta data using anndata
-    data = anndata.read_h5ad(
+    data = anndata.io.read_h5ad(
         "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.data.h5"
     )
-    count = anndata.read_h5ad(
+    count = anndata.io.read_h5ad(
         "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.count.h5"
     )
 
