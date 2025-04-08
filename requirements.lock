@@ -10,7 +10,8 @@
 #   universal: false
 
 -e file:.
-anndata==0.10.9
+anndata==0.11.4
+    # via pf2barcode
     # via scanpy
 array-api-compat==1.8
     # via anndata
@@ -120,7 +121,7 @@ numpy==2.0.2
     # via seaborn
     # via statsmodels
     # via umap-learn
-packaging==24.1
+packaging==24.2
     # via anndata
     # via dask
     # via ipykernel
