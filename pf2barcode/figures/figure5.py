@@ -6,19 +6,17 @@ Specifically, % of variance explained measures how much of the variability each 
 Helps identify which PCs are both highly explanatatory (captures a large portion of the variance) and statistically significiant, with each point containing annotations of its corresponding PC number
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-from scipy.stats import kruskal
 
 from pf2barcode.imports import import_CCLE
 
+from ..analysis import kruskal_pvalues
 from .common import (
     getSetup,
     subplotLabel,
 )
-
-from .analysis import kruskal_pvalues
 
 
 def makeFigure():

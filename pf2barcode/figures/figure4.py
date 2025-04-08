@@ -1,22 +1,23 @@
 """
-Generates a bar plot visualizing the relationship of PCs and computed negative log10 p-values from the Kruskal-Wallis H-test
+Generates a bar plot visualizing the relationship of PCs and computed
+negative log10 p-values from the Kruskal-Wallis H-test
 
-Computed p-values determines if distributions of PCs are statistically significantly across different groups, and the negative log10 transformation of the p-values allows for easier identification and interpretation of signficant PCs 
+Computed p-values determines if distributions of PCs are statistically
+significantly across different groups, and the negative log10 transformation
+of the p-values allows for easier identification and interpretation of signficant PCs 
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from scipy.stats import kruskal
 
 from pf2barcode.imports import import_CCLE
 
+from ..analysis import kruskal_pvalues
 from .common import (
     getSetup,
     subplotLabel,
 )
-
-from .analysis import kruskal_pvalues
 
 
 def makeFigure():
