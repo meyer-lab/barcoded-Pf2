@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import anndata
-import hdf5plugin  # noqa: F401
 import numpy as np
 import pandas as pd
 import scanpy as sc

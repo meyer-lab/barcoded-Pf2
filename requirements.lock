@@ -11,7 +11,6 @@
 
 -e file:.
 anndata==0.10.9
-    # via pf2barcode
     # via scanpy
 array-api-compat==1.8
     # via anndata
@@ -49,19 +48,11 @@ fsspec==2024.9.0
     # via dask
 gseapy==1.1.3
     # via pf2barcode
-h5netcdf==1.3.0
-    # via pf2barcode
 h5py==3.11.0
     # via anndata
-    # via h5netcdf
-    # via hdf5plugin
     # via scanpy
-hdf5plugin==5.0.0
-    # via pf2barcode
 idna==3.8
     # via requests
-igraph==0.11.6
-    # via pf2barcode
 importlib-metadata==8.6.1
     # via dask
 ipykernel==6.29.5
@@ -132,7 +123,6 @@ numpy==2.0.2
 packaging==24.1
     # via anndata
     # via dask
-    # via h5netcdf
     # via ipykernel
     # via matplotlib
     # via scanpy
@@ -222,8 +212,6 @@ statsmodels==0.14.2
     # via scanpy
 stdlib-list==0.10.0
     # via session-info
-texttable==1.7.0
-    # via igraph
 threadpoolctl==3.5.0
     # via scikit-learn
 toolz==0.12.1
