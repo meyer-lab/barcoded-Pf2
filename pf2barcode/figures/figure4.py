@@ -13,14 +13,15 @@ import seaborn as sns
 
 from pf2barcode.imports import import_CCLE
 
-from ..analysis import kruskal_pvalues
-from .common import (
+from pf2barcode.analysis import kruskal_pvalues
+from pf2barcode.analysis import anova_pvalues
+from pf2barcode.figures.common import (
     getSetup,
     subplotLabel,
 )
 
 
-def makeFigure():
+def makeFigureKruskal():
     X = import_CCLE()
 
     # Get a list of the axis objects and create a figure.
@@ -36,3 +37,28 @@ def makeFigure():
     plt.ylabel("-log10(p-value)")
 
     return f
+
+def makeFigureAnova():
+    X = import_CCLE()
+
+    # Get a list of the axis objects and create a figure.
+    ax, f = getSetup((10, 6), (1, 1))
+    subplotLabel(ax)
+
+    # Implement anova_pvalues function
+    pvalues = anova_pvalues(X)
+
+    # Barplot setup
+    sns.barplot(x=np.arange(pvalues.shape[0]), y=-np.log10(pvalues))
+    plt.xlabel("PC")
+    plt.ylabel("-log10(p-value)")
+
+    return f
+
+#added for testing purposes
+if __name__ == "__main__":
+    fig_kruskal = makeFigureKruskal()
+    fig_kruskal.savefig("pf2barcode/figures/figure4_kruskal.png", dpi=300)
+
+    fig_anova = makeFigureAnova()
+    fig_anova.savefig("pf2barcode/figures/figure4_anova.png", dpi=300)
