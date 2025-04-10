@@ -4,21 +4,19 @@ negative log10 p-values from the Kruskal-Wallis H-test
 
 Computed p-values determines if distributions of PCs are statistically
 significantly across different groups, and the negative log10 transformation
-of the p-values allows for easier identification and interpretation of signficant PCs 
+of the p-values allows for easier identification and interpretation of signficant PCs
 """
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from pf2barcode.imports import import_CCLE
-
-from pf2barcode.analysis import kruskal_pvalues
-from pf2barcode.analysis import anova_pvalues
+from pf2barcode.analysis import anova_pvalues, kruskal_pvalues
 from pf2barcode.figures.common import (
     getSetup,
     subplotLabel,
 )
+from pf2barcode.imports import import_CCLE
 
 
 def makeFigureKruskal():
@@ -38,6 +36,7 @@ def makeFigureKruskal():
 
     return f
 
+
 def makeFigureAnova():
     X = import_CCLE()
 
@@ -55,7 +54,8 @@ def makeFigureAnova():
 
     return f
 
-#added for testing purposes
+
+# added for testing purposes
 if __name__ == "__main__":
     fig_kruskal = makeFigureKruskal()
     fig_kruskal.savefig("pf2barcode/figures/figure4_kruskal.png", dpi=300)

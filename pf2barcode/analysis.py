@@ -3,10 +3,10 @@ This file contains the kruskal_pvalues function that is used in figure 4 and 5.
 """
 
 import numpy as np
-from scipy.stats import kruskal
-import statsmodels.formula.api as smf
-import statsmodels.api as sm
 import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from scipy.stats import kruskal
 
 
 def kruskal_pvalues(X):
@@ -27,26 +27,23 @@ def kruskal_pvalues(X):
 
     return pvalues
 
+
 def anova_pvalues(X):
-    
-    #get the number of PCs used
+    # get the number of PCs used
     n_pcs = X.obsm["X_pca"].shape[1]
-    #initialize an array of empty P-values for each PC
+    # initialize an array of empty P-values for each PC
     pvalues = np.zeros(n_pcs)
 
-# loop over every PC
+    # loop over every PC
     for jj in range(n_pcs):
-        #construct a pandas dataframe with the PC and the associated group label
-        df = pd.DataFrame({
-            "PC": X.obsm["X_pca"][:, jj],
-            "Group": X.obs["SW"].values
-        })
+        # construct a pandas dataframe with the PC and the associated group label
+        df = pd.DataFrame({"PC": X.obsm["X_pca"][:, jj], "Group": X.obs["SW"].values})
 
-#apply ordinary least squares to model the PC values as a function of group membership
+        # apply ordinary least squares to model the PC values as a function of group membership
         model = smf.ols("PC ~ Group", data=df).fit()
-        #apply anova to the model
+        # apply anova to the model
         anova_table = sm.stats.anova_lm(model, typ=2)
-        #assign the p values from the anova table
+        # assign the p values from the anova table
         pvalues[jj] = anova_table["PR(>F)"]["Group"]
 
     return pvalues

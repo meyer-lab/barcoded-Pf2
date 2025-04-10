@@ -10,14 +10,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from pf2barcode.imports import import_CCLE
-
-from pf2barcode.analysis import kruskal_pvalues
-from pf2barcode.analysis import anova_pvalues
+from pf2barcode.analysis import anova_pvalues, kruskal_pvalues
 from pf2barcode.figures.common import (
     getSetup,
     subplotLabel,
 )
+from pf2barcode.imports import import_CCLE
 
 
 def makeFigureKruskal():
@@ -28,11 +26,11 @@ def makeFigureKruskal():
     subplotLabel(ax)
 
     # Extract PCA results
-    X_pca = X.obsm["X_pca"]  
-   
+    X_pca = X.obsm["X_pca"]
+
     # Compute % variance explained
-    total_variance = np.sum(np.var(X_pca, axis = 0))
-    variance_explained = (np.var(X_pca, axis = 0) / total_variance) * 100  
+    total_variance = np.sum(np.var(X_pca, axis=0))
+    variance_explained = (np.var(X_pca, axis=0) / total_variance) * 100
 
     # Implement kruskal_pvalues function
     pvalues = kruskal_pvalues(X)
@@ -48,15 +46,16 @@ def makeFigureKruskal():
 
     for i in range(len(variance_explained)):
         plt.annotate(
-            f"PC{i + 1}",  
-            xy = (variance_explained[i], neg_log_pvalues[i]), 
-            xytext = (5, 5), 
-            textcoords = "offset points", 
-            ha = 'center',  
-            fontsize = 6,  
-)
+            f"PC{i + 1}",
+            xy=(variance_explained[i], neg_log_pvalues[i]),
+            xytext=(5, 5),
+            textcoords="offset points",
+            ha="center",
+            fontsize=6,
+        )
 
     return f
+
 
 def makeFigureAnova():
     X = import_CCLE()
@@ -66,11 +65,11 @@ def makeFigureAnova():
     subplotLabel(ax)
 
     # Extract PCA results
-    X_pca = X.obsm["X_pca"]  
-   
+    X_pca = X.obsm["X_pca"]
+
     # Compute % variance explained
-    total_variance = np.sum(np.var(X_pca, axis = 0))
-    variance_explained = (np.var(X_pca, axis = 0) / total_variance) * 100  
+    total_variance = np.sum(np.var(X_pca, axis=0))
+    variance_explained = (np.var(X_pca, axis=0) / total_variance) * 100
 
     # Implement kruskal_pvalues function
     pvalues = anova_pvalues(X)
@@ -86,17 +85,18 @@ def makeFigureAnova():
 
     for i in range(len(variance_explained)):
         plt.annotate(
-            f"PC{i + 1}",  
-            xy = (variance_explained[i], neg_log_pvalues[i]), 
-            xytext = (5, 5), 
-            textcoords = "offset points", 
-            ha = 'center',  
-            fontsize = 6,  
-)
+            f"PC{i + 1}",
+            xy=(variance_explained[i], neg_log_pvalues[i]),
+            xytext=(5, 5),
+            textcoords="offset points",
+            ha="center",
+            fontsize=6,
+        )
 
     return f
 
-#added for testing purposes
+
+# added for testing purposes
 if __name__ == "__main__":
     fig_kruskal = makeFigureKruskal()
     fig_kruskal.savefig("pf2barcode/figures/figure5_kruskal.png", dpi=300)
