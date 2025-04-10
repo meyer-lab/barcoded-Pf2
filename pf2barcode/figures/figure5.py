@@ -57,7 +57,7 @@ def makeFigureKruskal():
     return f
 
 
-def makeFigureAnova():
+def makeFigure():
     X = import_CCLE()
 
     # Get a list of the axis objects and create a figure
@@ -94,12 +94,3 @@ def makeFigureAnova():
         )
 
     return f
-
-
-# added for testing purposes
-if __name__ == "__main__":
-    fig_kruskal = makeFigureKruskal()
-    fig_kruskal.savefig("pf2barcode/figures/figure5_kruskal.png", dpi=300)
-
-    fig_anova = makeFigureAnova()
-    fig_anova.savefig("pf2barcode/figures/figure5_anova.png", dpi=300)

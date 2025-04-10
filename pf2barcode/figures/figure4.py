@@ -19,7 +19,7 @@ from pf2barcode.figures.common import (
 from pf2barcode.imports import import_CCLE
 
 
-def makeFigureKruskal():
+def makeFigure():
     X = import_CCLE()
 
     # Get a list of the axis objects and create a figure.
@@ -53,12 +53,3 @@ def makeFigureAnova():
     plt.ylabel("-log10(p-value)")
 
     return f
-
-
-# added for testing purposes
-if __name__ == "__main__":
-    fig_kruskal = makeFigureKruskal()
-    fig_kruskal.savefig("pf2barcode/figures/figure4_kruskal.png", dpi=300)
-
-    fig_anova = makeFigureAnova()
-    fig_anova.savefig("pf2barcode/figures/figure4_anova.png", dpi=300)
