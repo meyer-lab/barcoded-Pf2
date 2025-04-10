@@ -39,7 +39,8 @@ def anova_pvalues(X):
         # construct a pandas dataframe with the PC and the associated group label
         df = pd.DataFrame({"PC": X.obsm["X_pca"][:, jj], "Group": X.obs["SW"].values})
 
-        # apply ordinary least squares to model the PC values as a function of group membership
+        # apply ordinary least squares to model the PC values as a function of
+        # group membership
         model = smf.ols("PC ~ Group", data=df).fit()
         # apply anova to the model
         anova_table = sm.stats.anova_lm(model, typ=2)

@@ -1,9 +1,13 @@
 """
-Visualizes a scatter plot, showing the relationship between % variance explained by each PC and the statistical significance of the PC (-log10(p-value))
+Visualizes a scatter plot, showing the relationship between % variance explained by each
+PC and the statistical significance of the PC (-log10(p-value))
 
-Specifically, % of variance explained measures how much of the variability each PC captures
+Specifically, % of variance explained measures how much of the variability each
+PC captures
 
-Helps identify which PCs are both highly explanatatory (captures a large portion of the variance) and statistically significiant, with each point containing annotations of its corresponding PC number
+Helps identify which PCs are both highly explanatatory (captures a large portion of the
+variance) and statistically significiant, with each point containing annotations of its
+corresponding PC number
 """
 
 import matplotlib.pyplot as plt
