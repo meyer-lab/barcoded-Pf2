@@ -13,7 +13,7 @@ from pf2barcode.imports import import_CCLE
 
 def makeFigure():
     """Get a list of the axis objects and create a figure."""
-    X = import_CCLE()
+    X = import_CCLE("glm_pca")
 
     # Get rid of cells with no barcode
     X = X[X.obs["SW"] != "unknown"]
@@ -46,3 +46,4 @@ def makeFigure():
     os.rename("./output/heatmapfigure3.svg", "./output/figure3.svg")
 
     return None
+
