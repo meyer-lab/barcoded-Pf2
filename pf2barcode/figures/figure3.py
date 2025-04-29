@@ -46,4 +46,3 @@ def makeFigure():
     os.rename("./output/heatmapfigure3.svg", "./output/figure3.svg")
 
     return None
-

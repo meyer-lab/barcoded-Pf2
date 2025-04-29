@@ -1,12 +1,11 @@
 from pathlib import Path
 
 import anndata
-#import hdf5plugin  # noqa: F401
-import scprep
-from glmpca.glmpca import glmpca
+import hdf5plugin  # noqa: F401
 import numpy as np
 import pandas as pd
 import scanpy as sc
+from glmpca.glmpca import glmpca
 from scipy.sparse import csr_matrix
 from sklearn.utils.sparsefuncs import (
     inplace_column_scale,
@@ -39,7 +38,7 @@ def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData
 
 
 def import_CCLE(pca_option) -> anndata.AnnData:
-    #pca option should be passed as either pca or glm_pca 
+    # pca option should be passed as either pca or glm_pca
     """Imports barcoded cell data."""
     adatas = {}
     barcode_dfs = []
@@ -71,20 +70,20 @@ def import_CCLE(pca_option) -> anndata.AnnData:
     counts = counts[counts > 5]
 
     X = X[X.obs["SW"].isin(counts.index), :]
-    #conditional statement for either glm_pca or pca 
+    # conditional statement for either glm_pca or pca
     if pca_option == "glm_pca":
-        #convert from sparse to dense matrix
-        #matrix must be transposed for this implementation of glm_pca to give the same 
-        #shape output matrix as scanpy PCA
+        # convert from sparse to dense matrix
+        # matrix must be transposed for this implementation of glm_pca to give the same
+        # shape output matrix as scanpy PCA
         X_dense = X.X.toarray().T
-        #run glm_pca with the dense matrix and 30 components
-        glmpca_result = glmpca(X_dense, L=30)
-        #construct a new anndata object using the output dict from glm_pca 
-        X_new = anndata.AnnData(X=glmpca_result['factors'])
-        #copy over the data.obs from the original data
+        # run glm_pca with the dense matrix and 30 components
+        glmpca_result = glmpca(X_dense, L=30, verbose=True)
+        # construct a new anndata object using the output dict from glm_pca
+        X_new = anndata.AnnData(X=glmpca_result["factors"])
+        # copy over the data.obs from the original data
         X_new.obs = X.obs.copy()
-        X = X_new 
-        #manually add an x_pca column to the anndata object so that it works with the figure files
+        X = X_new
+        # manually add an x_pca column to the anndata object so that it works with the figure files
         X.obsm["X_pca"] = X.X
     else:
         X = prepare_dataset(X, geneThreshold=0.001)
