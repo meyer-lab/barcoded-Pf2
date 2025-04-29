@@ -5,7 +5,10 @@ import hdf5plugin  # noqa: F401
 import numpy as np
 import pandas as pd
 import scanpy as sc
-from scipy.sparse import csr_matrix
+from anndata.io import read_text
+from glmpca.glmpca import glmpca
+from scipy.sparse import csr_array, csr_matrix
+from sklearn.preprocessing import scale
 from sklearn.utils.sparsefuncs import (
     inplace_column_scale,
     mean_variance_axis,
@@ -36,7 +39,42 @@ def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData
     return X
 
 
-def import_CCLE() -> anndata.AnnData:
+def prepare_dataset_dev(X: anndata.AnnData) -> anndata.AnnData:
+    X.X = csr_array(X.X)  # type: ignore
+    assert np.amin(X.X.data) >= 0.0
+
+    # Remove cells and genes with fewer than 30 reads
+    X = X[X.X.sum(axis=1) > 5, X.X.sum(axis=0) > 5]
+
+    # Copy so that the subsetting is preserved
+    X._init_as_actual(X.copy())
+
+    # deviance transform
+    y_ij = X.X.toarray()  # type: ignore
+
+    # counts per cell
+    n_i = y_ij.sum(axis=1)
+
+    # MLE of gene expression
+    pi_j = y_ij.sum(axis=0) / np.sum(n_i)
+
+    non_y_ij = n_i[:, None] - y_ij
+    mu_ij = n_i[:, None] * pi_j[None, :]
+    signs = np.sign(y_ij - pi_j[None, :])
+
+    first_term = 2 * y_ij * np.log(np.maximum(y_ij, 1.0) / mu_ij)
+    second_term = 2 * non_y_ij * np.log(non_y_ij / (n_i[:, None] - mu_ij))
+
+    X.X = signs * np.sqrt(np.maximum(first_term + second_term, 0.0))
+
+    X.X = scale(X.X)
+
+    assert np.all(np.isfinite(X.X))  # type: ignore
+    return X
+
+
+def import_CCLE(pca_option="other") -> anndata.AnnData:
+    # pca option should be passed as either pca or glm_pca
     """Imports barcoded cell data."""
     adatas = {}
     barcode_dfs = []
@@ -47,9 +85,7 @@ def import_CCLE() -> anndata.AnnData:
         "T1_MDAMB231",
         "T2_MDAMB231",
     ):
-        data = anndata.io.read_text(
-            Path("./pf2barcode/data/" + name + "_count_mtx.tsv.bz2")
-        ).T
+        data = read_text(Path("./pf2barcode/data/" + name + "_count_mtx.tsv.bz2")).T
         barcodes = pd.read_csv(
             "./pf2barcode/data/" + name + "_SW.txt", sep="\t", index_col=0, header=0
         )
@@ -69,40 +105,27 @@ def import_CCLE() -> anndata.AnnData:
 
     X = X[X.obs["SW"].isin(counts.index), :]
 
-    X = prepare_dataset(X, geneThreshold=0.001)
+    # Copy so that the subsetting is preserved
+    X._init_as_actual(X.copy())
 
-    sc.pp.pca(X, n_comps=30, svd_solver="arpack")
+    # conditional statement for either glm_pca or pca
+    if pca_option == "glm_pca":
+        # convert from sparse to dense matrix
+        # matrix must be transposed for this implementation of glm_pca to give the same
+        # shape output matrix as scanpy PCA
+        X_dense = X.X.toarray().T
+
+        # run glm_pca with the dense matrix and 20 components
+        glmpca_result = glmpca(
+            X_dense, L=20, verbose=True, ctl={"maxIter": 2, "eps": 0.0001}
+        )
+
+        X.obsm["X_pca"] = glmpca_result["factors"]
+        X.varm["PCs"] = glmpca_result["loadings"]
+    if pca_option == "dev_pca":
+        X = prepare_dataset_dev(X)
+        sc.pp.pca(X, n_comps=20, svd_solver="arpack")
+    else:
+        X = prepare_dataset(X, geneThreshold=0.001)
+        sc.pp.pca(X, n_comps=20, svd_solver="arpack")
     return X
-
-
-def process_GSE150949(data_file):
-    """Preprocessing for GSE150949. This is performed to generate the annData files
-    that we will use more regularly."""
-    # read in the meta data using pandas
-    metadata = pd.read_csv(
-        "/opt/extra-storage/GSE150949/GSE150949_metaData_with_lineage.txt.gz",
-        delimiter="\t",
-        engine="python",
-    )
-    # separate the columns to merge with the data
-    columns = metadata[["full_cell_barcode", "lineage_barcode"]]
-    # create anndata object of the data file
-    data = anndata.io.read_csv(data_file, delimiter=",")
-    # merge the data file object with the metadata coluns
-    data.obs = data.obs.join(columns, how="left")
-    data.obs["full_cell_barcode"] = data.obs["full_cell_barcode"].astype(str)
-    data.obs["lineage_barcode"] = data.obs["lineage_barcode"].astype(str)
-    data.X = csr_matrix(data.X)
-    return data
-
-
-def import_GSE150949():
-    # read in the meta data using anndata
-    data = anndata.io.read_h5ad(
-        "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.data.h5"
-    )
-    count = anndata.io.read_h5ad(
-        "/opt/extra-storage/GSE150949/GSE150949_pooled_watermelon.count.h5"
-    )
-
-    return data, count
