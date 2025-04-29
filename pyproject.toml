@@ -6,7 +6,7 @@ authors = [
     { name = "Aaron Meyer", email = "git@asmlab.org" }
 ]
 license = { text = "MIT" }
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=2.0",
     "scipy>=1.14",
