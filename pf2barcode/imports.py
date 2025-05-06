@@ -8,7 +8,7 @@ import scanpy as sc
 from anndata.io import read_text
 from glmpca.glmpca import glmpca
 from scipy.sparse import csr_array, csr_matrix
-from sklearn.preprocessing import scale
+from scipy.special import xlogy
 from sklearn.utils.sparsefuncs import (
     inplace_column_scale,
     mean_variance_axis,
@@ -53,27 +53,44 @@ def prepare_dataset_dev(X: anndata.AnnData) -> anndata.AnnData:
     y_ij = X.X.toarray()  # type: ignore
 
     # counts per cell
-    n_i = y_ij.sum(axis=1)
+    n_i_col = y_ij.sum(axis=1).reshape(-1, 1)
 
     # MLE of gene expression
-    pi_j = y_ij.sum(axis=0) / np.sum(n_i)
+    pi_j = y_ij.sum(axis=0) / np.sum(n_i_col)
+    mu_ij = n_i_col * pi_j[None, :]
 
-    non_y_ij = n_i[:, None] - y_ij
-    mu_ij = n_i[:, None] * pi_j[None, :]
-    signs = np.sign(y_ij - pi_j[None, :])
+    # --- Calculate Deviance Terms using numerically stable xlogy ---
+    # D = 2 * [ y*log(y/mu) + (n-y)*log((n-y)/(n-mu)) ]
+    # D = 2 * [ (xlogy(y, y) - xlogy(y, mu)) + (xlogy(n-y, n-y) - xlogy(n-y, n-mu)) ]
 
-    first_term = 2 * y_ij * np.log(np.maximum(y_ij, 1.0) / mu_ij)
-    second_term = 2 * non_y_ij * np.log(non_y_ij / (n_i[:, None] - mu_ij))
+    n_minus_y = n_i_col - y_ij
+    n_minus_mu = n_i_col - mu_ij
 
-    X.X = signs * np.sqrt(np.maximum(first_term + second_term, 0.0))
+    # Term 1: y * log(y / mu) = xlogy(y, y) - xlogy(y, mu)
+    # xlogy handles y=0 case correctly returning 0.
+    term1 = xlogy(y_ij, y_ij) - xlogy(y_ij, mu_ij)
 
-    X.X = scale(X.X)
+    # Term 2: (n-y) * log((n-y) / (n-mu)) = xlogy(n-y, n-y) - xlogy(n-y, n-mu)
+    # xlogy handles n-y=0 case correctly returning 0.
+    term2 = xlogy(n_minus_y, n_minus_y) - xlogy(n_minus_y, n_minus_mu)
 
-    assert np.all(np.isfinite(X.X))  # type: ignore
+    # Calculate full deviance: D = 2 * (term1 + term2)
+    # Handle potential floating point inaccuracies leading to small negatives
+    deviance = 2 * (term1 + term2)
+    deviance = np.maximum(deviance, 0.0)  # Ensure non-negative before sqrt
+
+    # Calculate signed square root residuals: sign(y - mu) * sqrt(D)
+    signs = np.sign(y_ij - mu_ij)
+
+    # Reset sign to 0 if deviance is exactly 0 (e.g. y=0, mu=0 or y=n, mu=n)
+    # Avoids sign(-0.0) sometimes being -1
+    signs[deviance == 0] = 0
+
+    X.X = signs * np.sqrt(deviance)
     return X
 
 
-def import_CCLE(pca_option="other") -> anndata.AnnData:
+def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
     # pca option should be passed as either pca or glm_pca
     """Imports barcoded cell data."""
     adatas = {}
@@ -107,6 +124,9 @@ def import_CCLE(pca_option="other") -> anndata.AnnData:
 
     # Copy so that the subsetting is preserved
     X._init_as_actual(X.copy())
+
+    # Counts per cell
+    X.obs["n_counts"] = X.X.sum(axis=1)
 
     # conditional statement for either glm_pca or pca
     if pca_option == "glm_pca":
