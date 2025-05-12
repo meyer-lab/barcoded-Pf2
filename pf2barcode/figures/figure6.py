@@ -3,7 +3,9 @@ Creates a plot of the gene associations with the principal components
 """
 
 import os
+
 import scanpy as sc
+
 from pf2barcode.imports import import_CCLE
 
 
