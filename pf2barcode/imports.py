@@ -1,7 +1,7 @@
 from pathlib import Path
 
-import anndata
-import hdf5plugin  # noqa: F401
+from anndata import AnnData, concat
+from anndata.io import read_text
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -14,7 +14,7 @@ from sklearn.utils.sparsefuncs import (
 )
 
 
-def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData:
+def prepare_dataset(X: AnnData, geneThreshold: float) -> AnnData:
     assert isinstance(X.X, csr_matrix)
     assert np.amin(X.X.data) >= 0.0
 
@@ -38,7 +38,7 @@ def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData
     return X
 
 
-def prepare_dataset_dev(X: anndata.AnnData) -> anndata.AnnData:
+def prepare_dataset_dev(X: AnnData) -> AnnData:
     X.X = csr_array(X.X)  # type: ignore
     assert np.amin(X.X.data) >= 0.0
 
@@ -89,7 +89,7 @@ def prepare_dataset_dev(X: anndata.AnnData) -> anndata.AnnData:
     return X
 
 
-def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
+def import_CCLE(pca_option="dev_pca", n_comp=10) -> AnnData:
     # pca option should be passed as either pca or glm_pca
     """Imports barcoded cell data."""
     adatas = {}
@@ -104,7 +104,7 @@ def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
         # "T1_MDAMB231",
         "T2_MDAMB231",
     ):
-        data = anndata.read_text(current_dir / "data" / f"{name}_count_mtx.tsv.bz2").T
+        data = read_text(current_dir / "data" / f"{name}_count_mtx.tsv.bz2").T
         barcodes = pd.read_csv(
             current_dir / "data" / f"{name}_SW.txt", sep="\t", index_col=0, header=0
         )
@@ -116,7 +116,7 @@ def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
         barcode_dfs.append(barcodes)
         adatas[name] = data
 
-    X = anndata.concat(adatas, label="sample", index_unique="-")
+    X = concat(adatas, label="sample", index_unique="-")
     X.X = csr_matrix(X.X)
 
     counts = X.obs["SW"].value_counts()
@@ -134,9 +134,10 @@ def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
     if pca_option == "dev_pca":
         X = prepare_dataset_dev(X)
         X.X = scale(X.X)
-        sc.pp.pca(X, n_comps=10, svd_solver="arpack")
+        sc.pp.pca(X, n_comps=n_comp, svd_solver="arpack")
     else:
         X = prepare_dataset(X, geneThreshold=0.001)
-        sc.pp.pca(X, n_comps=20, svd_solver="arpack")
+        X.X = scale(X.X)
+        sc.pp.pca(X, n_comps=n_comp, svd_solver="arpack")
 
     return X
