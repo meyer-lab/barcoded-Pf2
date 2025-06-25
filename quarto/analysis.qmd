@@ -1,0 +1,27 @@
+---
+title: "Analysis"
+format: html
+jupyter: python3
+---
+
+```{python}
+import scanpy as sc
+from pf2barcode.imports import import_CCLE
+
+adata = import_CCLE("dev_pca")
+```
+
+
+```{python}
+sc.pl.pca_variance_ratio(adata)
+```
+
+
+```{python}
+sc.pl.pca(adata, color="SW", components="2,3")
+```
+
+
+```{python}
+sc.pl.pca_loadings(adata, components="1,2")
+```

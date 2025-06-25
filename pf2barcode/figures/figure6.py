@@ -10,14 +10,7 @@ from pf2barcode.imports import import_CCLE
 
 
 def makeFigure():
-    X = import_CCLE("pca")
-
-    # Get rid of cells with no barcode
-    X = X[X.obs["SW"] != "unknown"]
-
-    # remove cells with barcodes having less than 10 cells
-    good_SW = X.obs["SW"].value_counts().index[X.obs["SW"].value_counts() > 10]
-    X = X[X.obs["SW"].isin(good_SW)]
+    X = import_CCLE("dev_pca")
 
     # Output directory
     sc.settings.figdir = "./output/"

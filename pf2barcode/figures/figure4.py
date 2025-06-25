@@ -20,25 +20,7 @@ from pf2barcode.imports import import_CCLE
 
 
 def makeFigure():
-    X = import_CCLE()
-
-    # Get a list of the axis objects and create a figure.
-    ax, f = getSetup((10, 6), (1, 1))
-    subplotLabel(ax)
-
-    # Implement kruskal_pvalues function
-    pvalues = kruskal_pvalues(X)
-
-    # Barplot setup
-    sns.barplot(x=np.arange(pvalues.shape[0]), y=-np.log10(pvalues))
-    plt.xlabel("PC")
-    plt.ylabel("-log10(p-value)")
-
-    return f
-
-
-def makeFigureAnova():
-    X = import_CCLE()
+    X = import_CCLE("dev_pca")
 
     # Get a list of the axis objects and create a figure.
     ax, f = getSetup((10, 6), (1, 1))
@@ -46,6 +28,9 @@ def makeFigureAnova():
 
     # Implement anova_pvalues function
     pvalues = anova_pvalues(X)
+
+    # Implement kruskal_pvalues function
+    # pvalues = kruskal_pvalues(X)
 
     # Barplot setup
     sns.barplot(x=np.arange(pvalues.shape[0]), y=-np.log10(pvalues))

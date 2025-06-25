@@ -9,6 +9,7 @@ from anndata.io import read_text
 from glmpca.glmpca import glmpca
 from scipy.sparse import csr_array, csr_matrix
 from scipy.special import xlogy
+from sklearn.preprocessing import scale
 from sklearn.utils.sparsefuncs import (
     inplace_column_scale,
     mean_variance_axis,
@@ -144,7 +145,8 @@ def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
         X.varm["PCs"] = glmpca_result["loadings"]
     if pca_option == "dev_pca":
         X = prepare_dataset_dev(X)
-        sc.pp.pca(X, n_comps=20, svd_solver="arpack")
+        X.X = scale(X.X)
+        sc.pp.pca(X, n_comps=10, svd_solver="arpack")
     else:
         X = prepare_dataset(X, geneThreshold=0.001)
         sc.pp.pca(X, n_comps=20, svd_solver="arpack")
