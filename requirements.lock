@@ -157,7 +157,7 @@ scikit-learn==1.7.0
     # via pynndescent
     # via scanpy
     # via umap-learn
-scipy==1.16.0
+scipy==1.15.3
     # via anndata
     # via gseapy
     # via pf2barcode

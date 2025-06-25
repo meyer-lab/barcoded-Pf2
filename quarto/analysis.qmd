@@ -23,10 +23,10 @@ import seaborn as sns
 adata = import_CCLE("dev_pca")
 
 # Implement anova_pvalues function
-pvalues = anova_pvalues(X)
+pvalues = anova_pvalues(adata)
 
 # Implement kruskal_pvalues function
-# pvalues = kruskal_pvalues(X)
+# pvalues = kruskal_pvalues(adata)
 ```
 
 ```{python}
