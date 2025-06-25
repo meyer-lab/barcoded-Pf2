@@ -135,3 +135,5 @@ factor_cache
 nohup.out
 
 .DS_Store
+
+.quarto/

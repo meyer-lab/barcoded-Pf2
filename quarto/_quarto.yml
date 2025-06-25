@@ -1,0 +1,7 @@
+project:
+  title: "Analysis files"
+  output-dir: _output
+
+format:
+  typst:
+    papersize: us-letter

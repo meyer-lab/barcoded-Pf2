@@ -4,12 +4,9 @@ format: html
 jupyter: python3
 ---
 
-Generates a bar plot visualizing the relationship of PCs and computed
-negative log10 p-values from the Kruskal-Wallis H-test
+Generates a bar plot visualizing the relationship of PCs and computed negative log10 p-values from the Kruskal-Wallis H-test
 
-Computed p-values determines if distributions of PCs are statistically
-significantly across different groups, and the negative log10 transformation
-of the p-values allows for easier identification and interpretation of signficant PCs
+Computed p-values determines if distributions of PCs are statistically significantly across different groups, and the negative log10 transformation of the p-values allows for easier identification and interpretation of signficant PCs
 
 ```{python}
 import scanpy as sc
@@ -18,6 +15,7 @@ from pf2barcode.analysis import anova_pvalues, kruskal_pvalues
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 adata = import_CCLE("dev_pca")
@@ -48,4 +46,53 @@ sc.pl.pca(adata, color="SW", components="2,3")
 
 ```{python}
 sc.pl.pca_loadings(adata, components="1,2")
+```
+
+Visualizes a scatter plot, showing the relationship between % variance explained by each PC and the statistical significance of the PC (-log10(p-value))
+
+Specifically, % of variance explained measures how much of the variability each PC captures
+
+Helps identify which PCs are both highly explanatatory (captures a large portion of the variance) and statistically significiant, with each point containing annotations of its corresponding PC number
+
+```{python}
+# Extract PCA results
+X_pca = adata.obsm["X_pca"]
+
+# Compute % variance explained
+total_variance = np.sum(np.var(X_pca, axis=0))
+variance_explained = (np.var(X_pca, axis=0) / total_variance) * 100
+
+neg_log_pvalues = -np.log10(pvalues)
+
+# Create scatter plot
+sns.scatterplot(x=variance_explained, y=neg_log_pvalues, color="blue")
+
+plt.xlabel("Variance Explained (%)")
+plt.ylabel("-log10(p-value)")
+plt.title("PCA Significance vs Variance Explained")
+
+for i in range(len(variance_explained)):
+    plt.annotate(
+        f"PC{i + 1}",
+        xy=(variance_explained[i], neg_log_pvalues[i]),
+        xytext=(5, 5),
+        textcoords="offset points",
+        ha="center",
+        fontsize=6,
+    )
+```
+
+Makes a boxplot of cells with the number of reads per cell, organized by barcode. This is used to look for trends of differences in read depth by barcode.
+
+```{python}
+# Get rid of cells with no barcode
+X = adata[adata.obs["SW"] != "unknown"]  # type: ignore
+
+# remove cells with barcodes having less than 10 cells
+good_SW = X.obs["SW"].value_counts().index[X.obs["SW"].value_counts() > 10]
+X = X[X.obs["SW"].isin(good_SW)]  # type: ignore
+
+df = pd.DataFrame({"reads": X.obs["n_counts"], "SW": X.obs["SW"]})
+
+sns.boxplot(data=df, x="reads", y="SW");
 ```

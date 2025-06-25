@@ -5,7 +5,7 @@ import pandas as pd
 import scanpy as sc
 from anndata import AnnData, concat
 from anndata.io import read_text
-from scipy.sparse import csr_array, csr_matrix
+from scipy.sparse import csr_array
 from scipy.special import xlogy
 from sklearn.preprocessing import scale
 from sklearn.utils.sparsefuncs import (
@@ -15,7 +15,7 @@ from sklearn.utils.sparsefuncs import (
 
 
 def prepare_dataset(X: AnnData, geneThreshold: float) -> AnnData:
-    assert isinstance(X.X, csr_matrix)
+    assert isinstance(X.X, csr_array)
     assert np.amin(X.X.data) >= 0.0
 
     # Filter out genes with too few reads
@@ -117,7 +117,7 @@ def import_CCLE(pca_option="dev_pca", n_comp=10) -> AnnData:
         adatas[name] = data
 
     X = concat(adatas, label="sample", index_unique="-")
-    X.X = csr_matrix(X.X)
+    X.X = csr_array(X.X, dtype=np.float64)
 
     counts = X.obs["SW"].value_counts()
     counts = counts[counts > 5]
