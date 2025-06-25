@@ -1,9 +1,14 @@
 from pathlib import Path
+
+import anndata
+import hdf5plugin  # noqa: F401
+import numpy as np
 import pandas as pd
 import scanpy as sc
-import anndata
-from scipy.sparse import csr_matrix
-import numpy as np
+from anndata.io import read_text
+from glmpca.glmpca import glmpca
+from scipy.sparse import csr_array, csr_matrix
+from scipy.special import xlogy
 from sklearn.utils.sparsefuncs import (
     inplace_column_scale,
     mean_variance_axis,
@@ -19,7 +24,9 @@ def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData
     X = X[:, readmean > geneThreshold]
 
     # Normalize read depth
-    sc.pp.normalize_total(X, exclude_highly_expressed=False, inplace=True, key_added="n_counts")
+    sc.pp.normalize_total(
+        X, exclude_highly_expressed=False, inplace=True, key_added="n_counts"
+    )
 
     # Scale genes by sum
     readmean, _ = mean_variance_axis(X.X, axis=0)  # type: ignore
@@ -32,7 +39,59 @@ def prepare_dataset(X: anndata.AnnData, geneThreshold: float) -> anndata.AnnData
     return X
 
 
-def import_CCLE() -> anndata.AnnData:
+def prepare_dataset_dev(X: anndata.AnnData) -> anndata.AnnData:
+    X.X = csr_array(X.X)  # type: ignore
+    assert np.amin(X.X.data) >= 0.0
+
+    # Remove cells and genes with fewer than 30 reads
+    X = X[X.X.sum(axis=1) > 5, X.X.sum(axis=0) > 5]
+
+    # Copy so that the subsetting is preserved
+    X._init_as_actual(X.copy())
+
+    # deviance transform
+    y_ij = X.X.toarray()  # type: ignore
+
+    # counts per cell
+    n_i_col = y_ij.sum(axis=1).reshape(-1, 1)
+
+    # MLE of gene expression
+    pi_j = y_ij.sum(axis=0) / np.sum(n_i_col)
+    mu_ij = n_i_col * pi_j[None, :]
+
+    # --- Calculate Deviance Terms using numerically stable xlogy ---
+    # D = 2 * [ y*log(y/mu) + (n-y)*log((n-y)/(n-mu)) ]
+    # D = 2 * [ (xlogy(y, y) - xlogy(y, mu)) + (xlogy(n-y, n-y) - xlogy(n-y, n-mu)) ]
+
+    n_minus_y = n_i_col - y_ij
+    n_minus_mu = n_i_col - mu_ij
+
+    # Term 1: y * log(y / mu) = xlogy(y, y) - xlogy(y, mu)
+    # xlogy handles y=0 case correctly returning 0.
+    term1 = xlogy(y_ij, y_ij) - xlogy(y_ij, mu_ij)
+
+    # Term 2: (n-y) * log((n-y) / (n-mu)) = xlogy(n-y, n-y) - xlogy(n-y, n-mu)
+    # xlogy handles n-y=0 case correctly returning 0.
+    term2 = xlogy(n_minus_y, n_minus_y) - xlogy(n_minus_y, n_minus_mu)
+
+    # Calculate full deviance: D = 2 * (term1 + term2)
+    # Handle potential floating point inaccuracies leading to small negatives
+    deviance = 2 * (term1 + term2)
+    deviance = np.maximum(deviance, 0.0)  # Ensure non-negative before sqrt
+
+    # Calculate signed square root residuals: sign(y - mu) * sqrt(D)
+    signs = np.sign(y_ij - mu_ij)
+
+    # Reset sign to 0 if deviance is exactly 0 (e.g. y=0, mu=0 or y=n, mu=n)
+    # Avoids sign(-0.0) sometimes being -1
+    signs[deviance == 0] = 0
+
+    X.X = signs * np.sqrt(deviance)
+    return X
+
+
+def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
+    # pca option should be passed as either pca or glm_pca
     """Imports barcoded cell data."""
     adatas = {}
     barcode_dfs = []
@@ -63,7 +122,36 @@ def import_CCLE() -> anndata.AnnData:
     X = anndata.concat(adatas, label="sample", index_unique="-")
     X.X = csr_matrix(X.X)
 
-    X = prepare_dataset(X, geneThreshold=0.001)
+    counts = X.obs["SW"].value_counts()
+    counts = counts[counts > 5]
 
-    sc.pp.pca(X, n_comps=20, svd_solver="arpack")
+    X = X[X.obs["SW"].isin(counts.index), :]
+
+    # Copy so that the subsetting is preserved
+    X._init_as_actual(X.copy())
+
+    # Counts per cell
+    X.obs["n_counts"] = X.X.sum(axis=1)
+
+    # conditional statement for either glm_pca or pca
+    if pca_option == "glm_pca":
+        # convert from sparse to dense matrix
+        # matrix must be transposed for this implementation of glm_pca to give the same
+        # shape output matrix as scanpy PCA
+        X_dense = X.X.toarray().T
+
+        # run glm_pca with the dense matrix and 20 components
+        glmpca_result = glmpca(
+            X_dense, L=20, verbose=True, ctl={"maxIter": 2, "eps": 0.0001}
+        )
+
+        X.obsm["X_pca"] = glmpca_result["factors"]
+        X.varm["PCs"] = glmpca_result["loadings"]
+    if pca_option == "dev_pca":
+        X = prepare_dataset_dev(X)
+        sc.pp.pca(X, n_comps=20, svd_solver="arpack")
+    else:
+        X = prepare_dataset(X, geneThreshold=0.001)
+        sc.pp.pca(X, n_comps=20, svd_solver="arpack")
+
     return X
