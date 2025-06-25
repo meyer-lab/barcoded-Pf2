@@ -1,0 +1,51 @@
+---
+title: "Analysis"
+format: html
+jupyter: python3
+---
+
+Generates a bar plot visualizing the relationship of PCs and computed
+negative log10 p-values from the Kruskal-Wallis H-test
+
+Computed p-values determines if distributions of PCs are statistically
+significantly across different groups, and the negative log10 transformation
+of the p-values allows for easier identification and interpretation of signficant PCs
+
+```{python}
+import scanpy as sc
+from pf2barcode.imports import import_CCLE
+from pf2barcode.analysis import anova_pvalues, kruskal_pvalues
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+
+adata = import_CCLE("dev_pca")
+
+# Implement anova_pvalues function
+pvalues = anova_pvalues(adata)
+
+# Implement kruskal_pvalues function
+# pvalues = kruskal_pvalues(adata)
+```
+
+```{python}
+# Barplot setup
+sns.barplot(x=np.arange(pvalues.shape[0]), y=-np.log10(pvalues))
+plt.xlabel("PC")
+plt.ylabel("-log10(p-value)")
+```
+
+```{python}
+sc.pl.pca_variance_ratio(adata)
+```
+
+
+```{python}
+sc.pl.pca(adata, color="SW", components="2,3")
+```
+
+
+```{python}
+sc.pl.pca_loadings(adata, components="1,2")
+```
