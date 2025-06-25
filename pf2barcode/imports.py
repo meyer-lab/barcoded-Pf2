@@ -5,8 +5,6 @@ import hdf5plugin  # noqa: F401
 import numpy as np
 import pandas as pd
 import scanpy as sc
-from anndata.io import read_text
-from glmpca.glmpca import glmpca
 from scipy.sparse import csr_array, csr_matrix
 from scipy.special import xlogy
 from sklearn.utils.sparsefuncs import (
@@ -96,15 +94,18 @@ def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
     adatas = {}
     barcode_dfs = []
 
+    # Get the directory containing this file
+    current_dir = Path(__file__).parent
+
     for name in (
         # "HCT116_tracing_T1",
         # "T2_HCT116",
-        "T1_MDAMB231",
+        # "T1_MDAMB231",
         "T2_MDAMB231",
     ):
-        data = read_text(Path("./pf2barcode/data/" + name + "_count_mtx.tsv.bz2")).T
+        data = anndata.read_text(current_dir / "data" / f"{name}_count_mtx.tsv.bz2").T
         barcodes = pd.read_csv(
-            "./pf2barcode/data/" + name + "_SW.txt", sep="\t", index_col=0, header=0
+            current_dir / "data" / f"{name}_SW.txt", sep="\t", index_col=0, header=0
         )
         barcodes["sample"] = name
         barcodes = barcodes[~barcodes.index.duplicated(keep="first")]
@@ -128,24 +129,12 @@ def import_CCLE(pca_option="dev_pca") -> anndata.AnnData:
     # Counts per cell
     X.obs["n_counts"] = X.X.sum(axis=1)
 
-    # conditional statement for either glm_pca or pca
-    if pca_option == "glm_pca":
-        # convert from sparse to dense matrix
-        # matrix must be transposed for this implementation of glm_pca to give the same
-        # shape output matrix as scanpy PCA
-        X_dense = X.X.toarray().T
-
-        # run glm_pca with the dense matrix and 20 components
-        glmpca_result = glmpca(
-            X_dense, L=20, verbose=True, ctl={"maxIter": 2, "eps": 0.0001}
-        )
-
-        X.obsm["X_pca"] = glmpca_result["factors"]
-        X.varm["PCs"] = glmpca_result["loadings"]
+    # conditional statement for either dev_pca or pca
     if pca_option == "dev_pca":
         X = prepare_dataset_dev(X)
         sc.pp.pca(X, n_comps=20, svd_solver="arpack")
     else:
         X = prepare_dataset(X, geneThreshold=0.001)
         sc.pp.pca(X, n_comps=20, svd_solver="arpack")
+
     return X

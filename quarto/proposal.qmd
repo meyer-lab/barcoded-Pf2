@@ -1,0 +1,26 @@
+---
+title: "Analysis"
+format: html
+jupyter: python3
+---
+
+```{python}
+from pf2barcode.imports import import_CCLE
+from anndata import AnnData
+import scanpy as sc
+import pandas as pd
+
+X = import_CCLE()
+
+# Get rid of cells with no barcode
+X = X[X.obs["SW"] != "unknown"]
+
+# remove cells with barcodes having less than 10 cells
+good_SW = X.obs["SW"].value_counts().index[X.obs["SW"].value_counts() > 5]
+X = X[X.obs["SW"].isin(good_SW)]
+
+pcadata = AnnData(X.obsm["X_pca"], obs=X.obs, var=pd.DataFrame(index=[f'PC{i}' for i in range(1, X.obsm["X_pca"].shape[1] + 1)]))
+pcadata.X /= pcadata.X.mean(axis=1, keepdims=True)
+
+sc.pl.heatmap(pcadata, pcadata.var_names, groupby="SW", dendrogram=True, vmax=20.0, vmin=-20.0, cmap="PiYG")
+```

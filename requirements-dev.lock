@@ -13,6 +13,8 @@
 anndata==0.11.4
     # via pf2barcode
     # via scanpy
+appnope==0.1.4
+    # via ipykernel
 array-api-compat==1.8
     # via anndata
 asttokens==2.4.1
@@ -49,8 +51,6 @@ fonttools==4.53.1
     # via matplotlib
 fsspec==2024.9.0
     # via dask
-glmpca==0.1.0
-    # via pf2barcode
 gseapy==1.1.3
     # via pf2barcode
 h5py==3.11.0
