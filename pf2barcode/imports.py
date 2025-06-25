@@ -36,6 +36,9 @@ def import_CCLE() -> anndata.AnnData:
     """Imports barcoded cell data."""
     adatas = {}
     barcode_dfs = []
+    
+    # Get the directory containing this file
+    current_dir = Path(__file__).parent
 
     for name in (
         # "HCT116_tracing_T1",
@@ -44,10 +47,10 @@ def import_CCLE() -> anndata.AnnData:
         "T2_MDAMB231",
     ):
         data = anndata.read_text(
-            Path("./pf2barcode/data/" + name + "_count_mtx.tsv.bz2")
+            current_dir / "data" / f"{name}_count_mtx.tsv.bz2"
         ).T
         barcodes = pd.read_csv(
-            "./pf2barcode/data/" + name + "_SW.txt", sep="\t", index_col=0, header=0
+            current_dir / "data" / f"{name}_SW.txt", sep="\t", index_col=0, header=0
         )
         barcodes["sample"] = name
         barcodes = barcodes[~barcodes.index.duplicated(keep="first")]

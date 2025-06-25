@@ -13,6 +13,8 @@
 anndata==0.10.9
     # via pf2barcode
     # via scanpy
+appnope==0.1.4
+    # via ipykernel
 array-api-compat==1.8
     # via anndata
 asttokens==2.4.1
